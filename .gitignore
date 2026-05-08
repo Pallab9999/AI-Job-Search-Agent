@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+logs/
+output/
+chromedriver*
+.idea/
+.vscode/
+venv/
+data/seen_jobs.json

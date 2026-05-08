@@ -1,0 +1,25 @@
+{
+  "search_keywords": [
+    "machine learning intern",
+    "AI research assistant",
+    "PhD position NLP",
+    "PhD position quantum computing"
+  ],
+  "locations": [
+    "Remote",
+    "USA",
+    "Europe"
+  ],
+  "min_match_score": 0.5,
+  "check_interval_hours": 24,
+  "max_results_per_site": 50,
+  "sites_to_scrape": [
+    "ddg",
+    "indeed",
+    "linkedin",
+    "academic"
+  ],
+  "email_notifications": true,
+  "recipient_email": "pallabm472@gmail.com",
+  "auto_generate_cover_letter": true
+}

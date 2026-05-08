@@ -1,0 +1,84 @@
+{
+    "name": "Pallab Mondal",
+    "title": "MSc AI for Science & Technology | AI Engineer & Co-Founder",
+    "location": "Milan, Italy",
+    "phone": "+39 3520266387",
+    "email": "pallabm472@gmail.com",
+    "work_permit": "Italy",
+    "linkedin": "www.linkedin.com/in/pallab9",
+    "github": "https://github.com/Pallab9999",
+    "professional_summary": "MSc student in AI for Science & Technology with a Physics research background. Building hands-on expertise in agentic AI pipelines, LLM/SLM tooling, and NLP-driven systems.",
+    "education": [
+        {
+            "degree": "M.Sc. AI for Science and Technology",
+            "institution": [
+                "University of Milan-Bicocca",
+                "University of Milan",
+                "University of Pavia"
+            ],
+            "duration": "Oct 2025 – Present",
+            "status": "ongoing"
+        },
+        {
+            "degree": "M.Sc. in Physics",
+            "institution": "University of Burdwan, India",
+            "duration": "Dec 2020 – Sep 2022",
+            "thesis": "Doppler-Free Spectroscopy",
+            "result": "Graduated with Distinction"
+        }
+    ],
+    "experience": [
+        {
+            "role": "Co-Founder & AI Engineer",
+            "company": "AVANZA",
+            "duration": "Oct 2024 – Present",
+            "skills": [
+                "FastAPI",
+                "React/TypeScript",
+                "Supabase",
+                "NVIDIA NIM API",
+                "Agentic AI"
+            ]
+        },
+        {
+            "role": "Science Teacher & AI Integration Lead",
+            "company": "Burdwan Municipal High School",
+            "duration": "Dec 2024 – Feb 2025"
+        }
+    ],
+    "skills": {
+        "programming": [
+            "Python",
+            "JavaScript",
+            "TypeScript",
+            "SQL",
+            "NoSQL"
+        ],
+        "ai_ml": [
+            "LangChain",
+            "scikit-learn",
+            "OpenCV",
+            "pgmpy",
+            "Hugging Face"
+        ],
+        "cloud_backend": [
+            "GCP",
+            "FastAPI",
+            "Render",
+            "Supabase",
+            "Git"
+        ],
+        "domains": [
+            "Scientific ML",
+            "Physics-informed ML",
+            "Embedded AI",
+            "IoT"
+        ]
+    },
+    "languages": {
+        "English": "C1",
+        "Bengali": "Native",
+        "Hindi": "C2",
+        "Italian": "A1"
+    }
+}

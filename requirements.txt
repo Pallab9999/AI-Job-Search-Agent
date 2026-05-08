@@ -1,0 +1,11 @@
+requests
+beautifulsoup4
+selenium
+webdriver-manager
+pandas
+python-dotenv
+mistralai
+pytest
+lxml
+PyPDF2
+duckduckgo-search

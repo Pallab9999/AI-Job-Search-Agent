@@ -1,0 +1,123 @@
+{
+    "name": "Pallab Mondal",
+    "location": "Milan, Italy",
+    "email": "pallabm472@gmail.com",
+    "phone": "+39 352 026 6387",
+    "linkedin": "www.linkedin.com/in/pallab9",
+    "github": "https://github.com/Pallab9999",
+    "work_permit": "Italy",
+    "research_interests": [
+        "Quantum information hardware",
+        "Superconducting circuits and qubits",
+        "Bosonic and error-corrected encodings (GKP)",
+        "Quantum error correction",
+        "Precision laser spectroscopy",
+        "Low-temperature experimental physics",
+        "Physics-informed machine learning"
+    ],
+    "education": [
+        {
+            "degree": "M.Sc. Artificial Intelligence for Science and Technology",
+            "institutions": [
+                "University of Milan-Bicocca",
+                "University of Milan",
+                "University of Pavia"
+            ],
+            "duration": "Oct 2025 – Present",
+            "expected_completion": "2026",
+            "relevant_coursework": [
+                "Machine Learning",
+                "Statistical Learning",
+                "Signal & Image Processing",
+                "AI Models for Physics",
+                "Complex Systems Modeling"
+            ]
+        },
+        {
+            "degree": "M.Sc. in Physics",
+            "institution": "University of Burdwan, India",
+            "duration": "Dec 2020 – Sep 2022",
+            "thesis": "Doppler-Free Spectroscopy"
+        },
+        {
+            "degree": "B.Ed. in Physics (Science Education)",
+            "institution": "University of Burdwan, India",
+            "duration": "Sep 2023 – Jul 2025"
+        }
+    ],
+    "research_experience": [
+        {
+            "title": "Doppler-Free Saturated Absorption Spectroscopy",
+            "institution": "University of Burdwan",
+            "duration": "2021 – 2022",
+            "focus": [
+                "Saturated absorption spectroscopy",
+                "Optical alignment",
+                "Lock-in amplifier techniques",
+                "Spectral data analysis in Python"
+            ]
+        },
+        {
+            "title": "Quantum Computing Self-Study",
+            "institution": "ICTP Trieste / University of Milan-Bicocca",
+            "duration": "2024 – Present",
+            "topics": [
+                "Transmon Hamiltonian",
+                "Circuit QED",
+                "Qiskit",
+                "Surface code error correction",
+                "Quantum algorithms"
+            ]
+        }
+    ],
+    "projects": [
+        {
+            "name": "DeepLense: Domain Adaptation for Gravitational Lensing",
+            "duration": "2025 – Present",
+            "organization": "ML4SCI / Google Summer of Code 2026",
+            "description": "Physics-informed encoder with adversarial domain adaptation for lensing classification."
+        },
+        {
+            "name": "AVANZA",
+            "role": "Co-founder",
+            "description": "AI platform for immigrants in Italy using FastAPI, React/TypeScript, Supabase, NVIDIA NIM."
+        }
+    ],
+    "technical_skills": {
+        "experimental_physics": [
+            "Optical alignment",
+            "Laser operation (ECDL)",
+            "Photodetection",
+            "Analog signal conditioning"
+        ],
+        "quantum_computing": [
+            "Qiskit",
+            "Circuit QED",
+            "Stabilizer codes",
+            "Quantum error mitigation"
+        ],
+        "programming": [
+            "Python",
+            "PyTorch",
+            "NumPy",
+            "SciPy",
+            "Matplotlib",
+            "SQL",
+            "Git",
+            "Linux/bash",
+            "LaTeX"
+        ],
+        "machine_learning": [
+            "Deep Learning",
+            "PINNs",
+            "Domain Adaptation",
+            "LLMs"
+        ]
+    },
+    "languages": {
+        "English": "C1",
+        "Italian": "A1",
+        "Hindi": "C2",
+        "Bengali": "Native"
+    }
+}
