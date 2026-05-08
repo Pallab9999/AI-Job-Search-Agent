@@ -93,7 +93,10 @@ def filter_seen_jobs(jobs: list, filepath: str = "data/seen_jobs.json") -> list:
 
 def run_scraper_iteration(config: dict, dry_run: bool, target_cv_type: str = None):
     """Run a single iteration of the scraping and matching process."""
+    from utils.cli_ui import ui, MASCOT_SEARCHING, MASCOT_MATCHING, MASCOT_SUCCESS
+
     logger.info("Starting new scraping iteration...")
+    ui.show_phase("🔍  Phase 1: Scraping Job Boards", mascot=MASCOT_SEARCHING, style="bold yellow")
     
     all_jobs = []
     sites = config.get("sites_to_scrape", [])
@@ -107,16 +110,20 @@ def run_scraper_iteration(config: dict, dry_run: bool, target_cv_type: str = Non
                 return
                 
             if "indeed" in sites:
+                ui.show_scraping_progress(keyword, location, "Indeed")
                 all_jobs.extend(scrape_indeed(keyword, location, max_results))
             if "linkedin" in sites:
+                ui.show_scraping_progress(keyword, location, "LinkedIn")
                 all_jobs.extend(scrape_linkedin(keyword, location, max_results))
             if "academic" in sites:
-                # Academic boards might not use location in the same way, but keeping structure
+                ui.show_scraping_progress(keyword, location, "Academic Boards")
                 all_jobs.extend(scrape_academic_jobs(keyword, max_results))
             if "ddg" in sites:
+                ui.show_scraping_progress(keyword, location, "DuckDuckGo Deep Search")
                 all_jobs.extend(scrape_ddg(keyword, location, max_results))
                 
     logger.info(f"Total raw jobs scraped: {len(all_jobs)}")
+    ui.log_activity(f"Total raw jobs scraped: {len(all_jobs)}", style="green")
     
     # Deduplicate within this run
     unique_jobs = deduplicate_jobs(all_jobs)
@@ -124,9 +131,15 @@ def run_scraper_iteration(config: dict, dry_run: bool, target_cv_type: str = Non
     # Filter out previously seen jobs
     new_jobs = filter_seen_jobs(unique_jobs)
     logger.info(f"New unique jobs to process: {len(new_jobs)}")
+    ui.log_activity(f"After deduplication & filtering: {len(new_jobs)} new jobs", style="green")
     
     if not new_jobs:
+        ui.log_activity("No new jobs found this round.", style="yellow")
+        ui.show_completion(0, dry_run)
         return
+    
+    # ── Phase 2: Matching ──────────────────────────────────────────
+    ui.show_phase("📊  Phase 2: Matching Against Your CVs", mascot=MASCOT_MATCHING, style="bold magenta")
         
     # Match jobs
     matched_jobs = get_matching_jobs(new_jobs, config)
@@ -136,6 +149,10 @@ def run_scraper_iteration(config: dict, dry_run: bool, target_cv_type: str = Non
         matched_jobs = [m for m in matched_jobs if m[2] == target_cv_type]
         
     logger.info(f"Jobs meeting minimum score threshold: {len(matched_jobs)}")
+    ui.log_activity(f"Jobs above threshold: {len(matched_jobs)}", style="green")
+
+    # Show the match table
+    ui.show_match_table(matched_jobs)
     
     # Process matches
     for job, score, cv_type in matched_jobs:
@@ -146,34 +163,49 @@ def run_scraper_iteration(config: dict, dry_run: bool, target_cv_type: str = Non
         
         # Cover Letter Generation
         if config.get("auto_generate_cover_letter"):
+            ui.log_activity(f"Generating cover letter for: {job.get('title', 'N/A')[:40]}...", style="cyan")
             cv = load_cv(cv_type)
             api_key = os.environ.get("MISTRAL_API_KEY")
             letter = generate_ai_cover_letter(job, cv, api_key)
             save_cover_letter(letter, job)
-            
+    
+    # ── Phase 3: Notifications ─────────────────────────────────────
+    ui.show_phase("✉️  Phase 3: Sending Notifications", mascot=MASCOT_SUCCESS, style="bold green")
+
     # Send email
     recipient = config.get("recipient_email")
     if config.get("email_notifications") and not dry_run and matched_jobs:
         logger.info("Sending daily digest...")
+        ui.log_activity(f"Emailing digest to {recipient}...", style="green")
         send_daily_digest(matched_jobs, recipient)
     elif dry_run:
         logger.info("[Dry Run] Skipping email notifications.")
+        ui.log_activity("[Dry Run] Skipping email notifications.", style="yellow")
         
     # Save matches to recent_matches.json for Lovable.dev website integration
     if not dry_run and matched_jobs:
         try:
+            Path("data").mkdir(exist_ok=True)
             matches_to_save = [{"job": job, "score": score, "cv_type": cv_type} for job, score, cv_type in matched_jobs]
             with open("data/recent_matches.json", "w") as f:
-                json.dump(matches_to_save, f)
+                json.dump(matches_to_save, f, indent=2)
+            ui.log_activity("Saved recent_matches.json for website integration.", style="green")
         except Exception as e:
             logger.error(f"Failed to save recent_matches.json: {e}")
+            ui.log_activity(f"Failed to save matches: {e}", style="red")
         
     # Save seen jobs at the end of successful run
     if not dry_run:
         save_seen_jobs(new_jobs)
 
+    # ── Final Summary ──────────────────────────────────────────────
+    ui.show_stats_summary(len(all_jobs), len(new_jobs), len(matched_jobs))
+    ui.show_completion(len(matched_jobs), dry_run)
+
 def main():
-    parser = argparse.ArgumentParser(description="Job and PhD Search Agent")
+    from utils.cli_ui import ui
+    
+    parser = argparse.ArgumentParser(description="AI-HUNTER: Job and PhD Search Agent")
     parser.add_argument("--once", action="store_true", help="Run once and exit")
     parser.add_argument("--config", type=str, default="config.json", help="Path to config file")
     parser.add_argument("--cv-type", type=str, choices=["intern", "phd"], help="Filter by cv type")
@@ -181,15 +213,25 @@ def main():
     
     args = parser.parse_args()
     
+    # Show branded startup
+    ui.show_banner()
+    
     config = load_config(args.config)
     if not config:
         logger.error("Exiting due to missing or invalid config.")
+        ui.show_error("Failed to load configuration.")
         return
+    
+    # Show config summary
+    ui.show_config_summary(config)
+
+    if args.dry_run:
+        ui.log_activity("Running in DRY RUN mode (no emails, no state saved)", style="yellow")
         
     if args.once:
         run_scraper_iteration(config, args.dry_run, args.cv_type)
     else:
-        logger.info(f"Starting agent in continuous mode. Interval: {config.get('check_interval_hours', 24)} hours.")
+        ui.log_activity(f"Continuous mode. Interval: {config.get('check_interval_hours', 24)} hours.", style="cyan")
         while running:
             run_scraper_iteration(config, args.dry_run, args.cv_type)
             
@@ -197,7 +239,7 @@ def main():
                 break
                 
             sleep_hours = config.get('check_interval_hours', 24)
-            logger.info(f"Sleeping for {sleep_hours} hours. Press Ctrl+C to stop.")
+            ui.show_sleep(sleep_hours)
             
             # Sleep in smaller chunks to be responsive to Ctrl+C
             sleep_seconds = sleep_hours * 3600
@@ -207,6 +249,7 @@ def main():
                 slept += 1
 
     logger.info("Agent shut down successfully.")
+    ui.log_activity("Agent shut down successfully. Goodbye! 👋", style="bold green")
 
 if __name__ == "__main__":
     main()

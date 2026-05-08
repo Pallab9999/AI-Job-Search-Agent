@@ -9,3 +9,4 @@ pytest
 lxml
 PyPDF2
 duckduckgo-search
+rich
