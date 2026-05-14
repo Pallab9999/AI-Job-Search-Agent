@@ -11,17 +11,22 @@ jobs:
     
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Set up Python 3.10
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.10'
+        cache: 'pip'
         
-    - name: Install Chrome and dependencies for Selenium
+    - name: Install Chrome for Selenium
+      uses: browser-actions/setup-chrome@v1
+      with:
+        chrome-version: 'stable'
+        
+    - name: Create required directories
       run: |
-        sudo apt-get update
-        sudo apt-get install -y google-chrome-stable
+        mkdir -p data logs output/cover_letters assets
         
     - name: Install Python dependencies
       run: |
@@ -35,13 +40,15 @@ jobs:
         MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
         SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
         SMTP_PORT: ${{ secrets.SMTP_PORT }}
+        CI: 'true'
       run: |
-        python main.py --once
+        python main.py --once --config config.json
         
-    - name: Commit and push updated seen jobs
+    - name: Commit and push updated data
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add data/seen_jobs.json || echo "No changes to commit"
-        git commit -m "Update seen jobs [skip ci]" || echo "No changes to commit"
-        git push || echo "No changes to push"
+        git add data/seen_jobs.json data/recent_matches.json data/email_queue.json || true
+        git add -f output/ || true
+        git diff --cached --quiet || git commit -m "Update job data [skip ci]"
+        git push || echo "Nothing to push"

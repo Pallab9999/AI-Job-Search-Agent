@@ -25,15 +25,20 @@ def scrape_linkedin(keyword: str, location: str, max_results: int = 50) -> List[
     
     driver = None
     try:
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
+        try:
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service, options=options)
+        except Exception as e:
+            logger.error(f"Failed to initialize Chrome driver: {e}")
+            return jobs
         
         url = f"https://www.linkedin.com/jobs/search?keywords={urllib.parse.quote(keyword)}&location={urllib.parse.quote(location)}"
         driver.get(url)
         
-        # Scroll to load jobs
+        # Scroll to load jobs (with iteration limit to prevent hangs in CI)
         last_height = driver.execute_script("return document.body.scrollHeight")
-        while True:
+        max_scroll_attempts = 10
+        for _ in range(max_scroll_attempts):
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             time.sleep(2)
             new_height = driver.execute_script("return document.body.scrollHeight")
@@ -46,13 +51,19 @@ def scrape_linkedin(keyword: str, location: str, max_results: int = 50) -> List[
         for card in job_cards[:max_results]:
             try:
                 title_elem = card.find_element(By.CSS_SELECTOR, "h3.base-search-card__title")
-                title = title_elem.text.strip()
+                title = title_elem.get_attribute("innerText").strip() if title_elem else ""
+                if not title:
+                    title = title_elem.get_attribute("textContent").strip() if title_elem else ""
                 
                 company_elem = card.find_element(By.CSS_SELECTOR, "h4.base-search-card__subtitle")
-                company = company_elem.text.strip()
+                company = company_elem.get_attribute("innerText").strip() if company_elem else ""
+                if not company:
+                    company = company_elem.get_attribute("textContent").strip() if company_elem else ""
                 
                 location_elem = card.find_element(By.CSS_SELECTOR, "span.job-search-card__location")
-                loc = location_elem.text.strip()
+                loc = location_elem.get_attribute("innerText").strip() if location_elem else ""
+                if not loc:
+                    loc = location_elem.get_attribute("textContent").strip() if location_elem else ""
                 
                 url_elem = card.find_element(By.CSS_SELECTOR, "a.base-card__full-link")
                 href = url_elem.get_attribute("href")

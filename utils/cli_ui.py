@@ -2,6 +2,9 @@
 CLI UI Module for AI Job Search Agent
 Provides a rich, branded terminal experience with animated character and status displays.
 """
+import sys
+import os
+import io
 import time
 import threading
 from rich.console import Console
@@ -15,7 +18,21 @@ from rich.columns import Columns
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskID
 from rich import box
 
-console = Console()
+try:
+    from rich_pixels import Pixels
+    HAS_RICH_PIXELS = True
+except ImportError:
+    HAS_RICH_PIXELS = False
+
+# Force UTF-8 output on Windows
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
+
+# Detect CI environment
+IS_CI = os.environ.get("CI", "").lower() in ("true", "1", "yes")
+
+console = Console(force_terminal=not IS_CI)
 
 # ── ASCII Art Mascot ──────────────────────────────────────────────
 MASCOT_IDLE = r"""
@@ -94,16 +111,38 @@ class AgentUI:
         self._stats = {"scraped": 0, "unique": 0, "matched": 0}
         self._activity_log = []
 
+    def _get_pixel_image(self, path: str, fallback_text: str, color_style: str = "") -> any:
+        """Render an image as Pixels, falling back to ASCII text if missing/failed."""
+        if IS_CI:
+            return Text(fallback_text, style=color_style)
+        if HAS_RICH_PIXELS and os.path.exists(path):
+            try:
+                # Keep terminal width matching size (thumbnail aspect ratio)
+                # Max width ~40 chars fits nicely inside a panel of width 50
+                from PIL import Image
+                from pathlib import Path as _Path
+                _Path("data").mkdir(exist_ok=True)
+                img = Image.open(path)
+                img.thumbnail((36, 36))
+                img.save("data/temp_render.png") # temp thumb
+                return Pixels.from_image_path("data/temp_render.png")
+            except Exception:
+                pass
+        return Text(fallback_text, style=color_style)
+
     def show_banner(self):
         """Display the startup banner with mascot."""
-        self.console.clear()
+        if not IS_CI:
+            self.console.clear()
         banner_text = Text(BANNER)
         banner_text.stylize("bold cyan")
         self.console.print(banner_text)
         self.console.print()
 
+        hunter_mascot = self._get_pixel_image("assets/logo_hunter.png", MASCOT_IDLE, "bold green")
+
         mascot_panel = Panel(
-            Align.center(Text(MASCOT_IDLE, style="bold green")),
+            Align.center(hunter_mascot),
             title="[bold cyan]AI-HUNTER[/bold cyan]",
             subtitle="[dim]Ready to hunt[/dim]",
             border_style="cyan",
@@ -236,19 +275,21 @@ class AgentUI:
     def show_completion(self, matched_count: int, dry_run: bool):
         """Show completion screen with happy mascot."""
         if matched_count > 0:
-            mascot = MASCOT_SUCCESS
+            mascot_fallback = MASCOT_SUCCESS
             msg = f"Found {matched_count} matching positions!"
             color = "green"
+            img_path = "assets/logo_hunter.png"
         else:
-            mascot = MASCOT_IDLE
+            mascot_fallback = MASCOT_IDLE
             msg = "No new matches this round. Will try again later."
             color = "yellow"
+            img_path = "assets/logo_hunter.png"
+
+        mascot_render = self._get_pixel_image(img_path, mascot_fallback, f"bold {color}")
 
         completion_panel = Panel(
-            Align.center(
-                Text(mascot, style=f"bold {color}")
-            ),
-            title=f"[bold {color}]✨ Run Complete ✨[/{color}]",
+            Align.center(mascot_render),
+            title=f"[bold {color}]✨ Run Complete ✨[/bold {color}]",
             subtitle="[dim]Dry Run[/dim]" if dry_run else f"[dim]Results emailed[/dim]",
             border_style=color,
             padding=(0, 2),
@@ -259,8 +300,9 @@ class AgentUI:
 
     def show_error(self, message: str):
         """Show an error with the error mascot."""
+        error_mascot = self._get_pixel_image("assets/logo_error.png", MASCOT_ERROR, "bold red")
         error_panel = Panel(
-            Align.center(Text(MASCOT_ERROR, style="bold red")),
+            Align.center(error_mascot),
             title="[bold red]⚠️ Error[/bold red]",
             subtitle=f"[red]{message}[/red]",
             border_style="red",
